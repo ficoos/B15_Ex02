@@ -7,5 +7,6 @@ namespace Ex02.Othello
 	public interface IPlayer
 	{
 		BoardPosition GetMove();
+		int Score { get; set; }
 	}
 }

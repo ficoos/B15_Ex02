@@ -24,10 +24,21 @@ namespace Ex02.Othello.ConsoleInterface
 		{
 			int boardSize = readBoardSizeFromUser();
 			m_CurrentGame = new Game(new ConsolePlayer(), new ConsolePlayer(), boardSize);
+			eIterationResult lastIterationResult = eIterationResult.Success;
 			while (m_CurrentGame.IsRunning)
 			{
 				drawGameState(m_CurrentGame);
-				m_CurrentGame.Iterate();
+				switch(lastIterationResult)
+				{
+					case eIterationResult.IllegalMove:
+						Console.WriteLine("The move was illegal, please try again.");
+						break;
+					case eIterationResult.MoveOutOfBounds:
+						Console.WriteLine("The move was out of bounds, please try again.");
+						break;
+				}
+				
+				lastIterationResult = m_CurrentGame.Iterate();
 			}
 		}
 
@@ -93,7 +104,8 @@ namespace Ex02.Othello.ConsoleInterface
 
 		private void drawHeader()
 		{
-			Console.WriteLine("Amazing Othello. Stats, current player");
+            
+			Console.WriteLine("Amazing Othello. Stats, current player: {0}",m_CurrentGame.CurrentPlayerColor.ToString());
 		}
 
 		private int readBoardSizeFromUser()

@@ -37,6 +37,7 @@
   <ItemGroup>
     <Compile Include="BoardPosition.cs" />
     <Compile Include="eCellContent.cs" />
+    <Compile Include="eIterationResult.cs" />
     <Compile Include="ePlayerColor.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameBoard.cs" />

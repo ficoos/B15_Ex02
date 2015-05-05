@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ex02.Othello
 {
-	public class GameBoard : ICloneable
+	public class GameBoard : ICloneable, IEnumerable<GameBoard.Cell>
 	{
 		private static readonly int[] sr_ValidBoardSizes = new int[]{6, 8};
 
@@ -16,31 +16,77 @@ namespace Ex02.Othello
 
 		public struct Cell
 		{
-			public BoardPosition Position { get; private set; }
 			public eCellContent Content { get; set; }
 
-			public Cell(BoardPosition i_Position, eCellContent i_Content = eCellContent.None) : this()
+			public Cell(eCellContent i_Content = eCellContent.None) : this()
 			{
-				Position = i_Position;
 				Content = i_Content;
 			}
 
-			public static bool TryParse(string i_Input, out BoardPosition o_Position)
+			public Cell(ePlayerColor i_color) : this()
 			{
-				//TODO
-				i_Input = i_Input.Trim();
-				if (i_Input.Length != 2)
+				switch(i_color)
 				{
-					o_Position = new BoardPosition(0, 0);
-					return false;
+					case ePlayerColor.White:
+						Content = eCellContent.White;
+						break;
+					case ePlayerColor.Black:
+						Content = eCellContent.Black;
+						break;
+				}
+			}
+
+			public bool ContainsColor(ePlayerColor color)
+			{
+				bool result = false;
+
+				switch(Content)
+				{
+					case eCellContent.None:
+						result = false;
+						break;
+					case eCellContent.Black:
+						result = color == ePlayerColor.Black;
+						break;
+					case eCellContent.White:
+						result = color == ePlayerColor.White;
+						break;
 				}
 
-				return true;
+				return result;
+			}
+
+			public void Flip()
+			{
+				switch(Content)
+				{
+					case eCellContent.None:
+						throw new InvalidOperationException("Cell is empty cand cannot be flipped");
+					case eCellContent.Black:
+						Content = eCellContent.White;
+						break;
+					case eCellContent.White:
+						Content = eCellContent.Black;
+						break;
+				}
+			}
+
+			public bool IsEmpty
+			{
+				get
+				{
+					return Content == eCellContent.None;
+				}
+			}
+			
+			public override string ToString()
+			{
+				return string.Format("{0}[{1}]", this.GetType().FullName, Content);
 			}
 		}
 
 		private readonly Cell[,] r_BoardMatrix;
-		public int Size { get; private set; }
+		public int Size { get; private set; }  
 
 		public static bool IsValidBoardSize(int i_Size)
 		{
@@ -60,27 +106,71 @@ namespace Ex02.Othello
 			Size = i_Size;
 		}
 
-		public Cell this[int x, int y]
+		public Cell this[int i_X, int i_Y]
 		{
 			get {
-				return r_BoardMatrix[x, y];
+				return r_BoardMatrix[i_X, i_Y];
+			}
+
+			set
+			{
+				r_BoardMatrix[i_X, i_Y] = value;
+			}
+		}
+
+		public Cell this[BoardPosition i_Position]
+		{
+			get
+			{
+				return this[i_Position.X, i_Position.Y];
+			}
+
+			set
+			{
+				this[i_Position.X, i_Position.Y] = value;
 			}
 		}
 
 		private void initializeBoardMatrix()
 		{
-			for (int x = 0; x < r_BoardMatrix.GetLength(0); x++) {
-				for (int y = 0; y < r_BoardMatrix.GetLength(1); y++)
-				{
-					r_BoardMatrix[x, y] = new Cell(new BoardPosition(x, y));
-				}
-			}
+            int length = r_BoardMatrix.GetLength(0);
+
+            r_BoardMatrix[(length / 2) - 1, (length / 2) - 1].Content = eCellContent.White;
+            r_BoardMatrix[(length / 2), (length / 2)].Content = eCellContent.White;
+            r_BoardMatrix[(length / 2) - 1, (length / 2)].Content = eCellContent.Black;
+            r_BoardMatrix[(length / 2) , (length / 2)-1].Content = eCellContent.Black;
 		}
 
 		public object Clone()
 		{
-			//TODO
-			return this;
+			GameBoard cloneBoard = new GameBoard(this.Size);
+			Array.Copy(r_BoardMatrix, cloneBoard.r_BoardMatrix, this.Size * this.Size);
+			return cloneBoard;
+		}
+		public bool IsValidPosition(BoardPosition i_Position)
+		{
+			return IsValidPosition(i_Position.X, i_Position.Y);
+		}
+
+        public bool IsValidPosition(int i_X, int i_Y)
+        {
+            return (i_X >= 0 && i_Y >= 0 && i_X < Size && i_Y < Size);
+        }
+
+		public IEnumerator<GameBoard.Cell> GetEnumerator()
+		{
+			for (int x = 0; x < this.Size; x++)
+			{
+				for (int y = 0; y < this.Size; y++)
+				{
+					yield return this[x, y];
+				}
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return this.GetEnumerator();
 		}
 	}
 }
