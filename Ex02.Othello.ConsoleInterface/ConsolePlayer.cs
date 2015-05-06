@@ -4,27 +4,38 @@ using System.Text;
 
 namespace Ex02.Othello.ConsoleInterface
 {
-	class ConsolePlayer : IPlayer
+	class ConsolePlayerController : IPlayerController
 	{
-        public int Score { get; set; }
-
-		public BoardPosition GetMove()
+		public PlayerControllerAction GetAction(RankedMove[] i_LegalMoves)
 		{
-            bool parsingSuceeded = false;
-            BoardPosition newPosition = new BoardPosition();
+			const string v_QuitString = "Q";
 
-            while (!parsingSuceeded)
+            PlayerControllerAction action = null;
+
+			while (action == null)
             {
-                Console.WriteLine("Please enter your move (eg. A5):");
-                String strMove = Console.ReadLine();
-                parsingSuceeded = BoardPosition.TryParse(strMove, out newPosition);
-                if (!parsingSuceeded)
-                {
-                    Console.WriteLine("Invalid input. Please try again.");
-                }
+                Console.Write("Please enter your move, possible moves are [{0}]: ",
+					string.Join(", ", Array.ConvertAll(i_LegalMoves, i_Input => i_Input.Position.ToString())));
+                string strMove = Console.ReadLine();
+	            if (strMove == v_QuitString)
+	            {
+		            action = new QuitAction();
+	            }
+				else
+	            {
+		            BoardPosition newPosition;
+		            if (BoardPosition.TryParse(strMove, out newPosition))
+		            {
+			            action = new PerformMoveAction(newPosition);
+		            }
+		            else
+		            {
+			            Console.WriteLine("Invalid input. Please try again.");
+		            }
+	            }
             }
 
-            return newPosition;
+            return action;
         }
 		
 	}

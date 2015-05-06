@@ -6,7 +6,7 @@ namespace Ex02.Othello
 {
 	public class GameBoard : ICloneable, IEnumerable<GameBoard.Cell>
 	{
-		private static readonly int[] sr_ValidBoardSizes = new int[]{6, 8};
+		private static readonly int[] sr_ValidBoardSizes = {6, 8};
 
 		public static int[] ValidBoardSizes { 
 			get {
@@ -23,9 +23,9 @@ namespace Ex02.Othello
 				Content = i_Content;
 			}
 
-			public Cell(ePlayerColor i_color) : this()
+			public Cell(ePlayerColor i_Color) : this()
 			{
-				switch(i_color)
+				switch(i_Color)
 				{
 					case ePlayerColor.White:
 						Content = eCellContent.White;
@@ -36,20 +36,20 @@ namespace Ex02.Othello
 				}
 			}
 
-			public bool ContainsColor(ePlayerColor color)
+			public bool ContainsColor(ePlayerColor i_Color)
 			{
-				bool result = false;
+				bool result;
 
 				switch(Content)
 				{
-					case eCellContent.None:
-						result = false;
-						break;
 					case eCellContent.Black:
-						result = color == ePlayerColor.Black;
+						result = i_Color == ePlayerColor.Black;
 						break;
 					case eCellContent.White:
-						result = color == ePlayerColor.White;
+						result = i_Color == ePlayerColor.White;
+						break;
+					default:
+						result = false;
 						break;
 				}
 
@@ -143,10 +143,11 @@ namespace Ex02.Othello
 
 		public object Clone()
 		{
-			GameBoard cloneBoard = new GameBoard(this.Size);
-			Array.Copy(r_BoardMatrix, cloneBoard.r_BoardMatrix, this.Size * this.Size);
+			GameBoard cloneBoard = new GameBoard(Size);
+			Array.Copy(r_BoardMatrix, cloneBoard.r_BoardMatrix, Size * Size);
 			return cloneBoard;
 		}
+
 		public bool IsValidPosition(BoardPosition i_Position)
 		{
 			return IsValidPosition(i_Position.X, i_Position.Y);
@@ -157,11 +158,11 @@ namespace Ex02.Othello
             return (i_X >= 0 && i_Y >= 0 && i_X < Size && i_Y < Size);
         }
 
-		public IEnumerator<GameBoard.Cell> GetEnumerator()
+		public IEnumerator<Cell> GetEnumerator()
 		{
-			for (int x = 0; x < this.Size; x++)
+			for (int x = 0; x < Size; x++)
 			{
-				for (int y = 0; y < this.Size; y++)
+				for (int y = 0; y < Size; y++)
 				{
 					yield return this[x, y];
 				}
@@ -170,7 +171,7 @@ namespace Ex02.Othello
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
-			return this.GetEnumerator();
+			return GetEnumerator();
 		}
 	}
 }

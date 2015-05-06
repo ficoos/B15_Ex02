@@ -14,6 +14,22 @@ namespace Ex02.Othello
 		public int X { get; set; }
 		public int Y { get; set; }
 
+	    public static char FirstLetter
+	    {
+		    get
+		    {
+			    return k_FirstLetter;
+		    }
+	    }
+
+	    public static char FirstDigit
+	    {
+		    get
+		    {
+			    return k_FirstDigit;
+		    }
+	    }
+
         public BoardPosition(int i_X, int i_Y) : this()
 		{
 			X = i_X;
@@ -31,8 +47,8 @@ namespace Ex02.Othello
 
 			if (isValidInput)
 			{
-				int x = (int) (i_Input[k_FormatLetterIndex] - k_FirstLetter);
-				int y = (int) (i_Input[k_FormatNumberIndex] - k_FirstDigit);
+				int x = (i_Input[k_FormatLetterIndex] - k_FirstLetter);
+				int y = (i_Input[k_FormatNumberIndex] - k_FirstDigit);
 				o_Position = new BoardPosition(x, y);
 			}
 			else
@@ -63,9 +79,9 @@ namespace Ex02.Othello
 			return new BoardPosition(i_LeftArgument.X - i_RightArgument.X, i_LeftArgument.Y - i_RightArgument.Y);
 		}
 
-		public override bool Equals(object i_other)
+		public override bool Equals(object i_Other)
 		{
-			BoardPosition? other = i_other as BoardPosition?;
+			BoardPosition? other = i_Other as BoardPosition?;
 			return other.HasValue && this == other.Value;
 		}
 

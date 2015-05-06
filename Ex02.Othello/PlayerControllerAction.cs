@@ -4,9 +4,10 @@ using System.Text;
 
 namespace Ex02.Othello
 {
-	public interface IPlayer
+	public abstract class PlayerControllerAction
 	{
-		BoardPosition GetMove();
-		int Score { get; set; }
+		internal PlayerControllerAction()
+		{
+		}
 	}
 }

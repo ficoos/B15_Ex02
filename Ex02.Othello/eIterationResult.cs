@@ -6,6 +6,9 @@ namespace Ex02.Othello
 	{
 		Success,
 		MoveOutOfBounds,
-		IllegalMove
+		IllegalMove,
+		GameOver,
+		GameQuit,
+		NoPossibleMoves
 	}
 }

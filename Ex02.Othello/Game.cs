@@ -1,38 +1,77 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-
 
 namespace Ex02.Othello
 {
 	public class Game
 	{
-		public IPlayer BlackPlayer { get; private set; }
-		public IPlayer WhitePlayer { get; private set; }
-		public ePlayerColor CurrentPlayerColor { get; private set; }
-		public IPlayer CurrentPlayer
+		private readonly Player r_BlackPlayer;
+		public Player BlackPlayer
 		{
 			get
 			{
-				if (CurrentPlayerColor == ePlayerColor.Black)
-				{
-					return BlackPlayer;
-				}
-				else
-				{
-					return WhitePlayer;
-				}
+				return r_BlackPlayer;
 			}
 		}
-		private readonly GameBoard r_board;
 
+		private readonly Player r_WhitePlayer;
+		public Player WhitePlayer
+		{
+			get
+			{
+				return r_WhitePlayer;
+			}
+		}
+
+		public Player CurrentPlayer { get; private set; }
+
+		public Player OtherPlayer
+		{
+			get
+			{
+				return CurrentPlayer == BlackPlayer ? WhitePlayer : BlackPlayer;
+			}
+		}
+		
+		private readonly GameBoard r_Board;
 		public GameBoard Board
 		{
 			get
 			{
-				return r_board;
+				return r_Board;
 			}
 		}
+
+		public Player Winner 
+		{
+			get
+			{
+				Player winner;
+
+				if (IsRunning)
+				{
+					throw new InvalidOperationException("There is now winner, Game is still in progress.");
+				}
+
+				if (BlackPlayer.Score > WhitePlayer.Score)
+				{
+					winner = BlackPlayer;
+				}
+				else if (WhitePlayer.Score > BlackPlayer.Score)
+				{
+					winner = WhitePlayer;
+				}
+				else
+				{
+					winner = null;
+				}
+
+				return winner;
+			}
+		}
+
+		public bool IsRunning { get; private set; }
+		private eIterationResult m_LastIterationResult = eIterationResult.Success;
 
 		private static readonly BoardPosition[] sr_CardinalDirections = {
 			new BoardPosition(0, 1), // North
@@ -45,60 +84,120 @@ namespace Ex02.Othello
 			new BoardPosition(-1, 1) // NorthWest
 		};
 
-		public Game(IPlayer i_BlackPlayer, IPlayer i_WhitePlayer, int i_BoardSize)
+		public Game(PlayerInfo i_BlackPlayer, PlayerInfo i_WhitePlayer, int i_BoardSize)
 		{
-			BlackPlayer = i_BlackPlayer;
-			WhitePlayer = i_WhitePlayer;
-			CurrentPlayerColor = ePlayerColor.Black;
-			r_board = new GameBoard(i_BoardSize);
+			r_BlackPlayer = new Player(i_BlackPlayer.Name, i_BlackPlayer.Controller, ePlayerColor.Black);
+			r_WhitePlayer = new Player(i_WhitePlayer.Name, i_WhitePlayer.Controller, ePlayerColor.White);
+			r_BlackPlayer.Score = r_WhitePlayer.Score = 2;
+			CurrentPlayer = r_BlackPlayer;
+			r_Board = new GameBoard(i_BoardSize);
 			IsRunning = true;
 		}
 
 		private void switchPlayer()
 		{
-			if (CurrentPlayerColor == ePlayerColor.Black)
+			if (CurrentPlayer == r_BlackPlayer)
 			{
-				CurrentPlayerColor = ePlayerColor.White;
+				CurrentPlayer = r_WhitePlayer;
 			}
 			else
 			{
-				CurrentPlayerColor = ePlayerColor.Black;
+				CurrentPlayer = r_BlackPlayer;
 			}
 		}
 
-		public eIterationResult Iterate()
+		private eIterationResult handleQuitAction(QuitAction i_Action)
 		{
-			eIterationResult result = eIterationResult.Success;
+			IsRunning = false;
+			return eIterationResult.GameQuit;
+		}
 
-			BoardPosition newTokenPosition = CurrentPlayer.GetMove();
-			if (!r_board.IsValidPosition(newTokenPosition))
+		private eIterationResult handleAction(PlayerControllerAction i_Action)
+		{
+			eIterationResult result;
+
+			if (i_Action is QuitAction)
 			{
-				result = eIterationResult.MoveOutOfBounds;
+				result = handleQuitAction((QuitAction) i_Action);
 			}
-			else if (!r_board[newTokenPosition].IsEmpty)
+			else if (i_Action is PerformMoveAction)
 			{
-				result = eIterationResult.IllegalMove;
-			}
-			else if (performMove(newTokenPosition) == 0)
-			{
-				result = eIterationResult.IllegalMove;
+				result = handlePerfromMoveAction((PerformMoveAction) i_Action);
 			}
 			else
 			{
-				switchPlayer();
+				throw new ArgumentException("Got unknown action from user");
 			}
 
 			return result;
 		}
 
-		private int performMove(BoardPosition i_Position, bool i_FlipTiles = true)
+		private eIterationResult handlePerfromMoveAction(PerformMoveAction i_Action)
 		{
-			int totalFilpped = 0;
+			eIterationResult result;
+			BoardPosition newTokenPosition = i_Action.Position;
+
+			if (!r_Board.IsValidPosition(newTokenPosition))
+			{
+				result = eIterationResult.MoveOutOfBounds;
+			}
+			else if (!r_Board[newTokenPosition].IsEmpty)
+			{
+				result = eIterationResult.IllegalMove;
+			}
+			else
+			{
+				uint cellsFlipped = performMove(newTokenPosition);
+				if (cellsFlipped == 0)
+				{
+					result = eIterationResult.IllegalMove;
+				}
+				else
+				{
+					OtherPlayer.Score -= cellsFlipped;
+					CurrentPlayer.Score += cellsFlipped + 1;
+					switchPlayer();
+					result = eIterationResult.Success;
+				}
+			}
+
+			return result;
+		}
+
+		public eIterationResult Iterate()
+		{
+			eIterationResult result;
+			RankedMove[] rankedMoves = GetLegalMoves();
+
+			if (rankedMoves.Length == 0)
+			{
+				if (m_LastIterationResult == eIterationResult.NoPossibleMoves)
+				{
+					IsRunning = false;
+					result = eIterationResult.GameOver;
+				}
+				else
+				{
+					result = eIterationResult.NoPossibleMoves;
+				}
+			}
+			else
+			{
+				result = handleAction(CurrentPlayer.GetAction(rankedMoves));
+			}
+
+			m_LastIterationResult = result;
+			return result;
+		}
+
+		private uint performMove(BoardPosition i_Position, bool i_FlipTiles = true)
+		{
+			uint totalFilpped = 0;
 
 			foreach (BoardPosition offset in sr_CardinalDirections)
 			{
-				int numFilpped;
-				if (checkDirection(CurrentPlayerColor, i_Position + offset, offset, i_FlipTiles, out numFilpped))
+				uint numFilpped;
+				if (checkDirection(CurrentPlayer.Color, i_Position + offset, offset, i_FlipTiles, out numFilpped))
 				{
 					totalFilpped += numFilpped;
 				}
@@ -106,25 +205,24 @@ namespace Ex02.Othello
 
 			if (i_FlipTiles && totalFilpped > 0)
 			{
-				r_board[i_Position] = new GameBoard.Cell(CurrentPlayerColor);
+				r_Board[i_Position] = new GameBoard.Cell(CurrentPlayer.Color);
 			}
-
 
 			return totalFilpped;
 		}
 
-		public bool checkDirection(ePlayerColor i_PlayerColor, BoardPosition i_CurrentPosition, BoardPosition i_Offset, bool i_FilpTiles, out int o_NumFlipped)
+		private bool checkDirection(ePlayerColor i_PlayerColor, BoardPosition i_CurrentPosition, BoardPosition i_Offset, bool i_FilpTiles, out uint o_NumFlipped)
 		{
 			bool isValid = true;
-			o_NumFlipped = -1;
+			o_NumFlipped = 0;
 
-			if (!r_board.IsValidPosition(i_CurrentPosition))
+			if (!r_Board.IsValidPosition(i_CurrentPosition))
 			{
 				isValid = false;
 			}
 			else
 			{
-				GameBoard.Cell currentCell = r_board[i_CurrentPosition];
+				GameBoard.Cell currentCell = r_Board[i_CurrentPosition];
 				if (currentCell.IsEmpty)
 				{
 					isValid = false;
@@ -138,7 +236,7 @@ namespace Ex02.Othello
 					if (i_FilpTiles)
 					{
 						currentCell.Flip();
-						r_board[i_CurrentPosition] = currentCell;
+						r_Board[i_CurrentPosition] = currentCell;
 					}
 
 					o_NumFlipped++;
@@ -152,20 +250,30 @@ namespace Ex02.Othello
 			return isValid;
 		}
 
-		public bool HasValidMove(ePlayerColor i_Player)
+		public RankedMove[] GetLegalMoves()
 		{
-			return true;
+			List<RankedMove> legalMoves = new List<RankedMove>();
+
+			for (int x = 0; x < Board.Size; x++)
+			{
+				for (int y = 0; y < Board.Size; y++)
+				{
+					if (!Board[x, y].IsEmpty)
+					{
+						continue;
+					}
+
+					BoardPosition position = new BoardPosition(x, y);
+					const bool v_FlipTiles = true;
+					uint score = performMove(position, !v_FlipTiles);
+					if (score > 0)
+					{
+						legalMoves.Add(new RankedMove(position, score));
+					}
+				}
+			}
+
+			return legalMoves.ToArray();
 		}
-
-		public void AddPointsToPlayer(int i_Score, String i_PlayerType)
-		{
-			CurrentPlayer.Score += i_Score;
-		}
-
-
-
-
-		public bool IsRunning { get; private set; }
 	}
-
 }
