@@ -70,6 +70,25 @@ namespace Ex02.Othello
 			}
 		}
 
+		public Player Looser
+		{
+			get
+			{
+				Player looser;
+				Player winner = Winner;
+				if (winner == null)
+				{
+					looser = null;
+				}
+				else
+				{
+					looser = winner == BlackPlayer ? WhitePlayer : BlackPlayer;
+				}
+
+				return looser;
+			}
+		}
+
 		public bool IsRunning { get; private set; }
 
 		public Game(PlayerInfo i_BlackPlayer, PlayerInfo i_WhitePlayer, int i_BoardSize)
@@ -113,8 +132,16 @@ namespace Ex02.Othello
 
 			try
 			{
+				GameState.PlayerState currentPlayer = r_InternalGameState.CurrentPlayer;
 				r_InternalGameState.PlacePiece(newPiecePosition);
-				result = eIterationResult.Success;
+				if (currentPlayer == r_InternalGameState.CurrentPlayer)
+				{
+					result = eIterationResult.PlayerSkipped;
+				}
+				else
+				{
+					result = eIterationResult.Success;
+				}
 			}
 			catch (IndexOutOfRangeException)
 			{

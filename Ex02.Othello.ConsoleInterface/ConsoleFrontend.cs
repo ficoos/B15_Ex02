@@ -62,9 +62,9 @@ namespace Ex02.Othello.ConsoleInterface
 
 		private void playGame()
 		{
-			int boardSize = UserInputHelper.SelectFromList("Please select a valid board size", GameBoard.ValidBoardSizes);
 			PlayerInfo blackPlayerInfo = getBlackPlayerInformation();
 			PlayerInfo whitePlayerInfo = getWhitePlayerInformation();
+			int boardSize = UserInputHelper.SelectFromList("Please select a valid board size", GameBoard.ValidBoardSizes);
 			m_CurrentGame = new Game(blackPlayerInfo, whitePlayerInfo, boardSize);
 			drawGameState();
 			while (m_CurrentGame.IsRunning)
@@ -81,18 +81,23 @@ namespace Ex02.Othello.ConsoleInterface
 						break;
 					case eIterationResult.GameOver:
 						Player winner = m_CurrentGame.Winner;
+						Player looser = m_CurrentGame.Looser;
 						if (winner == null)
 						{
-							Console.WriteLine("Game over, it's a tie");
+							Console.WriteLine("Game over, it's a tie. Both players have {0} points.", m_CurrentGame.CurrentPlayer.Score);
 						}
 						else
 						{
-							Console.WriteLine("Game over, {0} wins!!!", winner.Name);	
+							Console.WriteLine("Game over, {0} wins with {1} points. {2} looses with {3} points.", 
+								winner.Name, winner.Score, looser.Name, looser.Score);	
 						}
 
 						break;
 					case eIterationResult.GameQuit:
 						m_IsRunning = false;
+						break;
+					case eIterationResult.PlayerSkipped:
+						Console.WriteLine("Turn skipped because there were no valid moves.");
 						break;
 				}
 			}
@@ -164,7 +169,10 @@ namespace Ex02.Othello.ConsoleInterface
 		private void drawHeader()
 		{
 			Console.WriteLine(
-@"Amazing Othello | {5}[{3}] {0} - {1} {6}[{4}] | Current Player: {2}
+@"Amazing Othello
+[ {3} ] {0,-3} > {5}  
+[ {4} ] {1,-3} > {6} 
+Current Player: {2}
 ",
 				m_CurrentGame.BlackPlayer.Score,
 				m_CurrentGame.WhitePlayer.Score,
@@ -182,6 +190,8 @@ namespace Ex02.Othello.ConsoleInterface
 				playGame();
 				m_IsRunning = shouldPlayAnotherGame();
 			}
+
+			Console.WriteLine("Thanks for playing!");
 		}
 	}
 }

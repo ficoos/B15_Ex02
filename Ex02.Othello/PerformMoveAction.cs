@@ -2,11 +2,19 @@
 {
 	public sealed class PerformMoveAction : PlayerControllerAction
 	{
-		public BoardPosition Position { get; private set; }
+		private readonly BoardPosition r_Position;
+
+		public BoardPosition Position
+		{
+			get
+			{
+				return r_Position;
+			}
+		}
 
 		public PerformMoveAction(BoardPosition i_Position)
 		{
-			Position = i_Position;
+			r_Position = i_Position;
 		}
 	}
 }

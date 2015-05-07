@@ -88,7 +88,15 @@ namespace Ex02.Othello
 
 		private readonly Cell[,] r_BoardMatrix;
 
-		public int Size { get; private set; }
+		private readonly int r_Size;
+
+		public int Size
+		{
+			get
+			{
+				return r_Size;
+			}
+		}
 
 		public static bool IsValidBoardSize(int i_Size)
 		{
@@ -105,7 +113,7 @@ namespace Ex02.Othello
 
 			r_BoardMatrix = new Cell[i_Size, i_Size];
 			initializeBoardMatrix();
-			Size = i_Size;
+			r_Size = i_Size;
 		}
 
 		public Cell this[int i_X, int i_Y]

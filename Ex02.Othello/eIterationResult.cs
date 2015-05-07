@@ -6,6 +6,7 @@
 		MoveOutOfBounds,
 		IllegalMove,
 		GameOver,
-		GameQuit
+		GameQuit,
+		PlayerSkipped
 	}
 }
