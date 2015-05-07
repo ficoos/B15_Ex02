@@ -3,6 +3,7 @@
 	public struct PlayerInfo
 	{
 		public string Name { get; set; }
+
 		public IPlayerController Controller { get; set; }
 
 		public PlayerInfo(string i_Name, IPlayerController i_Controller) : this()

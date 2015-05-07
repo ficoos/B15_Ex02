@@ -154,6 +154,7 @@ namespace Ex02.Othello
 					count++;
 				}
 			}
+
 			return count;
 		}
 
