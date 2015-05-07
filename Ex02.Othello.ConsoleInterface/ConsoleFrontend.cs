@@ -4,72 +4,37 @@ using Ex02.ConsoleUtils;
 
 namespace Ex02.Othello.ConsoleInterface
 {
-	class ConsoleFrontend
+	internal class ConsoleFrontEnd
 	{
+		private static readonly IDictionary<ePlayerColor, string> sr_ColorRepresentation = new Dictionary<ePlayerColor, string>
+																								{
+																									{ ePlayerColor.Black, "X" },
+																									{ ePlayerColor.White, "O" }
+																								};
+
 		private Game m_CurrentGame;
-		private static readonly IDictionary<ePlayerColor, string> sr_ColorRepresentation = new Dictionary<ePlayerColor, string> {
-			{ePlayerColor.Black, "X"},
-			{ePlayerColor.White, "O"}
-		};
 
 		private bool m_IsRunning;
 
-		public ConsoleFrontend()
+		public ConsoleFrontEnd()
 		{
 			m_IsRunning = true;
 		}
 
-		private static bool askYesNoQuestion(string i_Question)
-		{
-			const string v_YesAnswer = "y";
-			const string v_NoAnswer = "n";
-			bool? result = null;
-
-			while (!result.HasValue)
-			{
-				Console.Write("{2} ({0}/{1}): ", v_YesAnswer, v_NoAnswer, i_Question);
-				string answer = Console.ReadLine().ToLower();
-				switch (answer)
-				{
-					case v_YesAnswer:
-						result = true;
-						break;
-					case v_NoAnswer:
-						result = false;
-						break;
-				}
-
-				if (!result.HasValue)
-				{
-					Console.WriteLine("Please answer in the from of '{0}' or '{1}", v_YesAnswer, v_NoAnswer);
-				}
-			}
-
-			return result.Value;
-		}
-
 		private bool shouldPlayAnotherGame()
 		{
-			return askYesNoQuestion("Would you like to play another game?");
-		}
-
-		private static string askForNonEmptyString(string i_Question)
-		{
-			Console.Write("{0}: ", i_Question);
-			string answer = Console.ReadLine().Trim();
-			while (answer == string.Empty)
+			bool shouldPlay = m_IsRunning;
+			if (shouldPlay)
 			{
-				Console.WriteLine("Please enter a non empty string");
-				Console.Write("{0}: ", i_Question);
-				answer = Console.ReadLine().Trim();
+				shouldPlay = UserInputHelper.AskYesNoQuestion("Would you like to play another game?");
 			}
 
-			return answer;
+			return shouldPlay;
 		}
 
 		private PlayerInfo getBlackPlayerInformation()
 		{
-			string name = askForNonEmptyString("Please enter the black player's name");
+			string name = UserInputHelper.AskForNonEmptyString("Please enter the black player's name");
 			return new PlayerInfo(name, new ConsolePlayerController());
 		}
 
@@ -78,14 +43,15 @@ namespace Ex02.Othello.ConsoleInterface
 			string name;
 			IPlayerController controller;
 
-			if (askYesNoQuestion("Would you like to play against the AI"))
+			if (UserInputHelper.AskYesNoQuestion("Would you like to play against the AI"))
 			{
-				name = "Random AI";
-				controller = new RandomAiController();
+				uint searchDepth = UserInputHelper.SelectFromList("Please select difficulty level", new uint[] { 1, 2, 3, 4, 5 });
+				name = string.Format("AI Level {0}", searchDepth);
+				controller = new MinMaxAiController(searchDepth - 1);
 			}
 			else
 			{
-				name = askForNonEmptyString("Please enter the white player's name");
+				name = UserInputHelper.AskForNonEmptyString("Please enter the white player's name");
 				controller = new ConsolePlayerController();
 			}
 			
@@ -94,13 +60,14 @@ namespace Ex02.Othello.ConsoleInterface
 
 		private void playGame()
 		{
-			int boardSize = readBoardSizeFromUser();
+			int boardSize = UserInputHelper.SelectFromList("Please select a valid board size", GameBoard.ValidBoardSizes);
 			PlayerInfo blackPlayerInfo = getBlackPlayerInformation();
 			PlayerInfo whitePlayerInfo = getWhitePlayerInformation();
 			m_CurrentGame = new Game(blackPlayerInfo, whitePlayerInfo, boardSize);
-			eIterationResult lastIterationResult = eIterationResult.Success;
+			drawGameState();
 			while (m_CurrentGame.IsRunning)
 			{
+				eIterationResult lastIterationResult = this.m_CurrentGame.Iterate();
 				drawGameState();
 				switch(lastIterationResult)
 				{
@@ -120,16 +87,12 @@ namespace Ex02.Othello.ConsoleInterface
 						{
 							Console.WriteLine("Game over, {0} wins!!!", winner.Name);	
 						}
+
 						break;
 					case eIterationResult.GameQuit:
 						m_IsRunning = false;
 						break;
-					case eIterationResult.NoPossibleMoves:
-						Console.WriteLine("Skipped player because there were no possible moves");
-						break;
 				}
-
-				lastIterationResult = m_CurrentGame.Iterate();
 			}
 		}
 
@@ -146,19 +109,20 @@ namespace Ex02.Othello.ConsoleInterface
 			Console.Write("    ");
 			char headerLetter = BoardPosition.FirstLetter;
 
-			for (int i = 0; i <  board.Size; i++)
+			for (int i = 0; i < board.Size; i++)
 			{
 				Console.Write(" ");
 				Console.Write(headerLetter);
 				Console.Write("  ");
 				headerLetter++;
 			}
+
 			Console.WriteLine();
 
-			drawSperatorLine(board.Size);
+			drawSeparatorLine();
 			for (int y = 0; y < board.Size; y++ )
 			{
-				Console.Write(" {0} |", (char) (BoardPosition.FirstDigit + y));
+				Console.Write(" {0} |", (char)(BoardPosition.FirstDigit + y));
 				for (int x = 0; x < board.Size; x++)
 				{
 					Console.Write(" ");
@@ -179,14 +143,14 @@ namespace Ex02.Othello.ConsoleInterface
 				}
 
 				Console.WriteLine();
-				drawSperatorLine(board.Size);
+				this.drawSeparatorLine();
 			}
 		}
 
-		private static void drawSperatorLine(int i_Length)
+		private void drawSeparatorLine()
 		{
 			Console.Write("   ");
-			int lineLength = (i_Length * 4) + 1;
+			int lineLength = (m_CurrentGame.Board.Size * 4) + 1;
 			for (int i = 0; i < lineLength; i++)
 			{
 				Console.Write("=");
@@ -200,62 +164,21 @@ namespace Ex02.Othello.ConsoleInterface
 			Console.WriteLine(
 @"Amazing Othello | {5}[{3}] {0} - {1} {6}[{4}] | Current Player: {2}
 ",
-				m_CurrentGame.BlackPlayer.Score, m_CurrentGame.WhitePlayer.Score, m_CurrentGame.CurrentPlayer.Name,
-				sr_ColorRepresentation[ePlayerColor.Black], sr_ColorRepresentation[ePlayerColor.White],
-				m_CurrentGame.BlackPlayer.Name, m_CurrentGame.WhitePlayer.Name);
+				m_CurrentGame.BlackPlayer.Score,
+				m_CurrentGame.WhitePlayer.Score,
+				m_CurrentGame.CurrentPlayer.Name,
+				sr_ColorRepresentation[ePlayerColor.Black],
+				sr_ColorRepresentation[ePlayerColor.White],
+				m_CurrentGame.BlackPlayer.Name,
+				m_CurrentGame.WhitePlayer.Name);
 		}
 		
-		private int readBoardSizeFromUser()
-		{
-			const int v_InvalidBoardSize = -1;
-			int boardSize = v_InvalidBoardSize;
-			bool isValidInput = false;
-
-			while (!isValidInput)
-			{
-				Console.Write("Please select a valid board size (");
-				foreach (int size in GameBoard.ValidBoardSizes)
-				{
-					bool isFirstItem = size == GameBoard.ValidBoardSizes[0];
-					if (!isFirstItem)
-					{
-						Console.Write(", ");
-					}
-
-					Console.Write(size);
-				}
-
-				Console.Write("):");
-				string strSize = Console.ReadLine();
-				if (!int.TryParse(strSize, out boardSize))
-				{
-					boardSize = v_InvalidBoardSize;
-					Console.WriteLine("Input is not an integer, please try again");
-					continue;
-				}
-
-				if (!GameBoard.IsValidBoardSize(boardSize))
-				{
-					boardSize = v_InvalidBoardSize;
-					Console.WriteLine("Board size not supported");
-					continue;
-				}
-
-				isValidInput = true;
-			}
-
-			return boardSize;
-		}
-
 		public void Run()
 		{
 			while (m_IsRunning)
 			{
 				playGame();
-				if (m_IsRunning)
-				{
-					m_IsRunning = shouldPlayAnotherGame();
-				}
+				m_IsRunning = shouldPlayAnotherGame();
 			}
 		}
 	}

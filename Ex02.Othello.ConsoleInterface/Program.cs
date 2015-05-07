@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ex02.Othello.ConsoleInterface
+﻿namespace Ex02.Othello.ConsoleInterface
 {
-	class Program
+	internal class Program
 	{
-		static void Main(string[] args)
+		public static void Main()
 		{
-			ConsoleFrontend frontend = new ConsoleFrontend();
-			frontend.Run();
+			ConsoleFrontEnd frontEnd = new ConsoleFrontEnd();
+			frontEnd.Run();
 		}
 	}
 }

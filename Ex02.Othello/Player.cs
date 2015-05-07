@@ -1,26 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ex02.Othello
+﻿namespace Ex02.Othello
 {
 	public class Player
 	{
-		public uint Score { get; internal set; }
-		public ePlayerColor Color { get; private set; }
-		public string Name { get; private set; }
-		private readonly IPlayerController r_Controller;
+		private readonly GameState.PlayerState r_PlayerState;
+		private readonly PlayerInfo r_PlayerInfo;
 
-		internal Player(string i_Name, IPlayerController i_Controller, ePlayerColor i_Color)
+		public uint Score
 		{
-			r_Controller = i_Controller;
-			Color = i_Color;
-			Name = i_Name;
+			get
+			{
+				return r_PlayerState.Score;
+			}
+		}
+	
+		public ePlayerColor Color
+		{
+			get
+			{
+				return r_PlayerState.Color;
+			}
 		}
 
-		public PlayerControllerAction GetAction(RankedMove[] i_LegalMoves)
+		public string Name
 		{
-			return r_Controller.GetAction(i_LegalMoves);
+			get
+			{
+				return r_PlayerInfo.Name;
+			}
+		}
+
+		internal Player(GameState.PlayerState i_PlayerState, PlayerInfo i_PlayerInfo)
+		{
+			r_PlayerState = i_PlayerState;
+			r_PlayerInfo = i_PlayerInfo;
+		}
+
+		public PlayerControllerAction GetAction(GameState i_GameStateCopy)
+		{
+			return r_PlayerInfo.Controller.GetAction(i_GameStateCopy);
 		}
 	}
 }

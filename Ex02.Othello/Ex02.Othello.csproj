@@ -41,15 +41,16 @@
     <Compile Include="ePlayerColor.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameBoard.cs" />
+    <Compile Include="GameState.cs" />
+    <Compile Include="IlegalMoveException.cs" />
     <Compile Include="IPlayerController.cs" />
     <Compile Include="PerformMoveAction.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="PlayerControllerAction.cs" />
     <Compile Include="PlayerInfo.cs" />
-    <Compile Include="RankedMove.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QuitAction.cs" />
-    <Compile Include="RandomAiController.cs" />
+    <Compile Include="MinMaxAiController.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Ex02.Othello
 {
-	public class GameBoard : ICloneable, IEnumerable<GameBoard.Cell>
+	public class GameBoard : IEnumerable<GameBoard.Cell>
 	{
-		private static readonly int[] sr_ValidBoardSizes = {6, 8};
+		private static readonly int[] sr_ValidBoardSizes = { 6, 8 };
 
-		public static int[] ValidBoardSizes { 
-			get {
+		public static int[] ValidBoardSizes
+		{ 
+			get
+			{
 				return sr_ValidBoardSizes;
 			}
 		}
@@ -61,7 +62,7 @@ namespace Ex02.Othello
 				switch(Content)
 				{
 					case eCellContent.None:
-						throw new InvalidOperationException("Cell is empty cand cannot be flipped");
+						throw new InvalidOperationException("Cell is empty and cannot be flipped");
 					case eCellContent.Black:
 						Content = eCellContent.White;
 						break;
@@ -86,7 +87,8 @@ namespace Ex02.Othello
 		}
 
 		private readonly Cell[,] r_BoardMatrix;
-		public int Size { get; private set; }  
+
+		public int Size { get; private set; }
 
 		public static bool IsValidBoardSize(int i_Size)
 		{
@@ -108,7 +110,8 @@ namespace Ex02.Othello
 
 		public Cell this[int i_X, int i_Y]
 		{
-			get {
+			get
+			{
 				return r_BoardMatrix[i_X, i_Y];
 			}
 
@@ -137,11 +140,24 @@ namespace Ex02.Othello
 
             r_BoardMatrix[(length / 2) - 1, (length / 2) - 1].Content = eCellContent.White;
             r_BoardMatrix[(length / 2), (length / 2)].Content = eCellContent.White;
-            r_BoardMatrix[(length / 2) - 1, (length / 2)].Content = eCellContent.Black;
-            r_BoardMatrix[(length / 2) , (length / 2)-1].Content = eCellContent.Black;
+			r_BoardMatrix[(length / 2) - 1, (length / 2)].Content = eCellContent.Black;
+			r_BoardMatrix[(length / 2), (length / 2) - 1].Content = eCellContent.Black;
 		}
 
-		public object Clone()
+		public uint GetPieceCount(ePlayerColor i_Color)
+		{
+			uint count = 0;
+			foreach (Cell cell in r_BoardMatrix)
+			{
+				if (cell.ContainsColor(i_Color))
+				{
+					count++;
+				}
+			}
+			return count;
+		}
+
+		public GameBoard DeepCopy()
 		{
 			GameBoard cloneBoard = new GameBoard(Size);
 			Array.Copy(r_BoardMatrix, cloneBoard.r_BoardMatrix, Size * Size);
@@ -155,7 +171,7 @@ namespace Ex02.Othello
 
         public bool IsValidPosition(int i_X, int i_Y)
         {
-            return (i_X >= 0 && i_Y >= 0 && i_X < Size && i_Y < Size);
+            return i_X >= 0 && i_Y >= 0 && i_X < Size && i_Y < Size;
         }
 
 		public IEnumerator<Cell> GetEnumerator()

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ex02.Othello
+﻿namespace Ex02.Othello
 {
     public struct BoardPosition
     {
@@ -10,9 +6,6 @@ namespace Ex02.Othello
 		private const int k_FormatNumberIndex = 1;
 		private const char k_FirstLetter = 'A';
 		private const char k_FirstDigit = '1';
-
-		public int X { get; set; }
-		public int Y { get; set; }
 
 	    public static char FirstLetter
 	    {
@@ -29,6 +22,10 @@ namespace Ex02.Othello
 			    return k_FirstDigit;
 		    }
 	    }
+
+		public int X { get; set; }
+
+		public int Y { get; set; }
 
         public BoardPosition(int i_X, int i_Y) : this()
 		{
@@ -47,8 +44,8 @@ namespace Ex02.Othello
 
 			if (isValidInput)
 			{
-				int x = (i_Input[k_FormatLetterIndex] - k_FirstLetter);
-				int y = (i_Input[k_FormatNumberIndex] - k_FirstDigit);
+				int x = i_Input[k_FormatLetterIndex] - k_FirstLetter;
+				int y = i_Input[k_FormatNumberIndex] - k_FirstDigit;
 				o_Position = new BoardPosition(x, y);
 			}
 			else
@@ -92,7 +89,7 @@ namespace Ex02.Othello
 
 		public override string ToString()
 		{
-			return string.Format("{0}{1}", (char) (k_FirstLetter + X), (char) (k_FirstDigit + Y));
+			return string.Format("{0}{1}", (char)(k_FirstLetter + X), (char)(k_FirstDigit + Y));
 		}
     }
 }

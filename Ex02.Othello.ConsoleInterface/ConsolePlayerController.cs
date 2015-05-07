@@ -1,22 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ex02.Othello.ConsoleInterface
 {
-	class ConsolePlayerController : IPlayerController
+	internal class ConsolePlayerController : IPlayerController
 	{
-		public PlayerControllerAction GetAction(RankedMove[] i_LegalMoves)
+		public PlayerControllerAction GetAction(GameState i_GameStateCopy)
 		{
+			BoardPosition[] legalMoves = i_GameStateCopy.GetLegalMoves();
 			const string v_QuitString = "Q";
-
             PlayerControllerAction action = null;
-
 			while (action == null)
-            {
-                Console.Write("Please enter your move, possible moves are [{0}]: ",
-					string.Join(", ", Array.ConvertAll(i_LegalMoves, i_Input => i_Input.Position.ToString())));
-                string strMove = Console.ReadLine();
+			{
+				Console.Write(
+					"Please enter your move, possible moves are [{0}]: ",
+					string.Join(", ", Array.ConvertAll(legalMoves, i_Input => i_Input.ToString())));
+				string strMove = Console.ReadLine();
 	            if (strMove == v_QuitString)
 	            {
 		            action = new QuitAction();
@@ -36,7 +34,6 @@ namespace Ex02.Othello.ConsoleInterface
             }
 
             return action;
-        }
-		
+        }	
 	}
 }

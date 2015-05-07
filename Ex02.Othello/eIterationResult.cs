@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ex02.Othello
+﻿namespace Ex02.Othello
 {
 	public enum eIterationResult
 	{
@@ -8,7 +6,6 @@ namespace Ex02.Othello
 		MoveOutOfBounds,
 		IllegalMove,
 		GameOver,
-		GameQuit,
-		NoPossibleMoves
+		GameQuit
 	}
 }

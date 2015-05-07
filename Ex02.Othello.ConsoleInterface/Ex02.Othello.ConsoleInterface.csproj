@@ -41,8 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConsolePlayer.cs" />
+    <Compile Include="ConsolePlayerController.cs" />
     <Compile Include="ConsoleFrontend.cs" />
+    <Compile Include="UserInputHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
