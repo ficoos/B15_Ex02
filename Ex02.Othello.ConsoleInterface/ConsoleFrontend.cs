@@ -12,6 +12,8 @@ namespace Ex02.Othello.ConsoleInterface
 																									{ ePlayerColor.White, "O" }
 																								};
 
+		private static readonly uint[] sr_AiDifficultyLevels = { 1, 2, 3, 4, 5 };
+
 		private Game m_CurrentGame;
 
 		private bool m_IsRunning;
@@ -45,7 +47,7 @@ namespace Ex02.Othello.ConsoleInterface
 
 			if (UserInputHelper.AskYesNoQuestion("Would you like to play against the AI"))
 			{
-				uint searchDepth = UserInputHelper.SelectFromList("Please select difficulty level", new uint[] { 1, 2, 3, 4, 5 });
+				uint searchDepth = UserInputHelper.SelectFromList("Please select difficulty level", sr_AiDifficultyLevels);
 				name = string.Format("AI Level {0}", searchDepth);
 				controller = new MinMaxAiController(searchDepth - 1);
 			}
