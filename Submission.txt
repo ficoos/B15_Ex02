@@ -1,0 +1,10 @@
+==========================Exercise Checking Report==========================
+Exercise No...........: 2
+First Student Details.: 032493124 - Saggi Mizrahi
+Second Student Details: 201111606 - Mar Sade
+Delivery Date.........: 9 - May - 2015
+Delivered In Delay....: No
+Delay Reason..........: None
+Visual Studio Version.: 2013
+Comments..............: Added AI levels. I you choose to play against the AI you will be asked to select a level from 1 to 5.
+=======================End Exercise Checking Report=========================
